@@ -105,14 +105,14 @@ sows = sows[1:N_SOW_opt]
 
 Define objective function: 
 
-Also, gonna cite: https://discourse.julialang.org/t/no-method-matching-length-for-any-dot-syntax-operation-involving-a-struct/88425
+Gonna cite: https://discourse.julialang.org/t/no-method-matching-length-for-any-dot-syntax-operation-involving-a-struct/88425
 as how I figured out broadcasting.  According to this source, Julia often tries to iterate across custom values, even if there's just one of them, which obviously doesn't work, and throws an arror when we try to broadcast a function with "."  .  The broadcastable lines fix this. 
 ```{julia}
 Base.broadcastable(a::Action) = Ref(a)  #Broadcasting, see commentary above
 Base.broadcastable(p::ModelParams) = Ref(p)
 
 function Obj_Fun(Elevation)
-    a = Action(1u"ft") #convert input scalar to an action
+    a = Action(Elevation*1u"ft") #convert input scalar to an action
     #println(a)
     Exp_Values = run_sim.(a, sows, p) #run sim on each SOW to get expected values 
     #println(Exp_Values)
@@ -121,11 +121,24 @@ function Obj_Fun(Elevation)
 end 
 ```
 
+Test our function with a few elevations:
 ```{julia}
-Obj_Fun(1)
+println(Obj_Fun(0))
+println(Obj_Fun(3))
+println(Obj_Fun(10))
 ```
 
+```{julia}
+bounds = boxconstraints(; lb=0, ub=14) #bounds from 0 ft to 14 ft
+println(bounds)
+options = Options(; time_limit=10.0)  #set a time limit
+algorithm = ECA(; options=options) #set an algorithm
+Random.seed!(336)
+```
 
+```{julia}
+result = optimize(Obj_Fun, bounds, algorithm)
+```
 ```{julia}
 a = Action(3.0u"ft")
 sow = first(sows)
