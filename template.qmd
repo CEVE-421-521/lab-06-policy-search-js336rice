@@ -104,12 +104,18 @@ sows = sows[1:N_SOW_opt]
 ```
 
 Define objective function: 
+
+Also, gonna cite: https://discourse.julialang.org/t/no-method-matching-length-for-any-dot-syntax-operation-involving-a-struct/88425
+as how I figured out broadcasting.  According to this source, Julia often tries to iterate across custom values, even if there's just one of them, which obviously doesn't work, and throws an arror when we try to broadcast a function with "."  .  The broadcastable lines fix this. 
 ```{julia}
+Base.broadcastable(a::Action) = Ref(a)  #Broadcasting, see commentary above
+Base.broadcastable(p::ModelParams) = Ref(p)
+
 function Obj_Fun(Elevation)
     a = Action(1u"ft") #convert input scalar to an action
-    println(a)
+    #println(a)
     Exp_Values = run_sim.(a, sows, p) #run sim on each SOW to get expected values 
-    println(Exp_Values)
+    #println(Exp_Values)
     return -sum(Exp_Values) #return negative sum of expected values
 
 end 
