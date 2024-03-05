@@ -71,13 +71,16 @@ end
 
 house = let
     haz_fl_dept = CSV.read("data/haz_fl_dept.csv", DataFrame) # read in the file
-    desc = "one story, Contents, fresh water, short duration"
-    row = @rsubset(haz_fl_dept, :Description == desc)[1, :] # select the row I want
+    desc = "Two-story, no basement in Galveston"
+    row = @rsubset(haz_fl_dept, :Column1 == 98)[1, :,] # select the row I want
     area = 1500u"ft^2"
-    height_above_gauge = 10u"ft"
+    height_above_gauge = 5u"ft"  #Previously used 4.91, had to round up to 5 to make it work with functions
     House(row; area=area, height_above_gauge=height_above_gauge, value_usd=250_000)
 end
+```
 
+
+```{julia}
 p = ModelParams(; house=house, years=2024:2083)
 
 function draw_surge_distribution()
@@ -163,3 +166,14 @@ let
     )
 end
 ```
+
+## Reflection
+
+Conclude your analysis by reflecting on the following questions
+
+1. How are we framing this problem? What are the decision variables, the objective function, and the states of the world over which we optimize?
+
+
+2. Digging deeper, we are averaging the objective function computed over a finite number of states of the world. This assumes that they are all drawn from a distribution representing the "true" distribution of states of the world. Is this a good assumption?
+
+3. What's not being considered in this analysis that might be important?
