@@ -50,15 +50,9 @@ using Unitful
 Plots.default(; margin=5Plots.mm)
 ```
 
-```{julia}
-function objective_function(a::AbstractFloat)
-    return true # PLACEHOLDER
-end
-```
 
 ```{julia}
 Random.seed!(2024)
-
 ```
 
 
@@ -93,16 +87,16 @@ function draw_discount_rate()
     return 0.0
 end
 
-N_SOW = 100_000
+N_SOW = 1_000
 sows = [
     SOW(rand(slr_scenarios), draw_surge_distribution(), draw_discount_rate()) for
     _ in 1:N_SOW
-] # for 100,000 SOWs
+] # Had to do less SOWs since 100k didn't finish running after 30 minutes on my computer
 ```
 
 Pick first X number of SOWs 
 ```{julia}
-N_SOW_opt = 10
+N_SOW_opt = 100 #bumped it up to 100 since 10 didn't get the same results as the graph
 limited_sows = sows[1:N_SOW_opt]
 ```
 
@@ -143,6 +137,8 @@ Random.seed!(336)
 
 ```{julia}
 result = optimize(Obj_Fun, bounds, algorithm)
+println("Lowest NPV is ", minimum(result))
+println("Which is achieved by elevating to a height of ", minimizer(result)[1], " feet.")
 ```
 
 Plot our results: 
