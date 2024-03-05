@@ -122,20 +122,14 @@ end
 ```
 
 ```{julia}
-#Base.broadcastable(a::Action) = Ref(a)  #Broadcasting, see commentary above
-#Base.broadcastable(p::ModelParams) = Ref(p)
-
-#Obj_Fun(Elevation) = -sum(run_sim.(Action(Elevation*1u"ft"), sows, p))
 let
-    # Generate a grid of points for the surface plot
+    # Generate points for the plot
     Elevation = range(0; stop=14, length=100)
     NPV = Obj_Fun.(Elevation)
-    #NPV = [Obj_Fun([i]) for i in Elevation]
-    #z = range(0; stop=14, length=1000)
 
     # Create the plot
     plot(
-        Elevation, NPV; xlabel="Elevation", ylabel="NPV", title=L"NPV"
+        Elevation, NPV; xlabel="Elevation", ylabel="Net Present Cost (USD)", title="Net Present Costs vs Elevation"
     )
 end
 ```
