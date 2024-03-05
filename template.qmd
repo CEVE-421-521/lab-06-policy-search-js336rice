@@ -113,13 +113,33 @@ Base.broadcastable(p::ModelParams) = Ref(p)
 
 function Obj_Fun(Elevation)
     a = Action(Elevation*1u"ft") #convert input scalar to an action
-    #println(a)
+    
     Exp_Values = run_sim.(a, sows, p) #run sim on each SOW to get expected values 
-    #println(Exp_Values)
+    
     return -sum(Exp_Values) #return negative sum of expected values
 
 end 
 ```
+
+```{julia}
+Base.broadcastable(a::Action) = Ref(a)  #Broadcasting, see commentary above
+Base.broadcastable(p::ModelParams) = Ref(p)
+
+#Obj_Fun(Elevation) = -sum(run_sim.(Action(Elevation*1u"ft"), sows, p))
+let
+    # Generate a grid of points for the surface plot
+    Elevation = range(0; stop=14, length=1000)
+    NPV = Obj_Fun.(Elevation)
+    #NPV = [Obj_Fun([i]) for i in Elevation]
+    #z = range(0; stop=14, length=1000)
+
+    # Create the plot
+    plot(
+        Elevation, NPV; xlabel="Elevation", ylabel="NPV", title=L"NPV"
+    )
+end
+```
+
 
 Test our function with a few elevations:
 ```{julia}
