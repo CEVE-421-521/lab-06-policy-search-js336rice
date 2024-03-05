@@ -73,7 +73,7 @@ house = let
     haz_fl_dept = CSV.read("data/haz_fl_dept.csv", DataFrame) # read in the file
     desc = "one story, Contents, fresh water, short duration"
     row = @rsubset(haz_fl_dept, :Description == desc)[1, :] # select the row I want
-    area = 500u"ft^2"
+    area = 1500u"ft^2"
     height_above_gauge = 10u"ft"
     House(row; area=area, height_above_gauge=height_above_gauge, value_usd=250_000)
 end
@@ -107,6 +107,7 @@ Define objective function:
 
 Gonna cite: https://discourse.julialang.org/t/no-method-matching-length-for-any-dot-syntax-operation-involving-a-struct/88425
 as how I figured out broadcasting.  According to this source, Julia often tries to iterate across custom values, even if there's just one of them, which obviously doesn't work, and throws an arror when we try to broadcast a function with "."  .  The broadcastable lines fix this. 
+
 ```{julia}
 Base.broadcastable(a::Action) = Ref(a)  #Broadcasting, see commentary above
 Base.broadcastable(p::ModelParams) = Ref(p)
@@ -119,19 +120,6 @@ function Obj_Fun(Elevation)
     return -sum(Exp_Values) #return negative sum of expected values
 
 end 
-```
-
-```{julia}
-let
-    # Generate points for the plot
-    Elevation = range(0; stop=14, length=100)
-    NPV = Obj_Fun.(Elevation)
-
-    # Create the plot
-    plot(
-        Elevation, NPV; xlabel="Elevation", ylabel="Net Present Cost (USD)", title="Net Present Costs vs Elevation"
-    )
-end
 ```
 
 
@@ -154,12 +142,17 @@ Random.seed!(336)
 result = optimize(Obj_Fun, bounds, algorithm)
 ```
 
-
-
+Plot our results: 
 
 ```{julia}
-a = Action(3.0u"ft")
-sow = first(sows)
-_ = run_sim(a, sow, p)
-@time run_sim(a, sow, p)
+let
+    # Generate points for the plot
+    Elevation = range(0; stop=14, length=100)
+    NPV = Obj_Fun.(Elevation)
+
+    # Create the plot
+    plot(
+        Elevation, NPV; xlabel="Elevation", ylabel="Net Present Cost (USD)", title="Net Present Costs vs Elevation"
+    )
+end
 ```
