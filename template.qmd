@@ -100,7 +100,7 @@ sows = [
 Pick first X number of SOWs 
 ```{julia}
 N_SOW_opt = 10
-sows = sows[1:N_SOW_opt]
+limited_sows = sows[1:N_SOW_opt]
 ```
 
 Define objective function: 
@@ -115,7 +115,7 @@ Base.broadcastable(p::ModelParams) = Ref(p)
 function Obj_Fun(Elevation)
     a = Action.(Elevation*1u"ft") #convert input scalar to an action
     
-    Exp_Values = run_sim.(a, sows, p) #run sim on each SOW to get expected values 
+    Exp_Values = run_sim.(a, limited_sows, p) #run sim on each SOW to get expected values 
     
     return -sum(Exp_Values) #return negative sum of expected values
 
@@ -145,14 +145,21 @@ result = optimize(Obj_Fun, bounds, algorithm)
 Plot our results: 
 
 ```{julia}
+
+function All_SOW_Obj_Fun(Elevation)
+    a = Action.(Elevation*1u"ft") #convert input scalar to an action
+    Exp_Values = run_sim.(a, sows , p) #run sim on each SOW to get expected values 
+    return -sum(Exp_Values) #return negative sum of expected values
+end 
+
 let
     # Generate points for the plot
-    Elevation = range(0; stop=14, length=100)
-    NPV = Obj_Fun.(Elevation)
+    Elevation = range(0; stop=14, length=15)
+    NPV = All_SOW_Obj_Fun.(Elevation)
 
     # Create the plot
     plot(
-        Elevation, NPV; xlabel="Elevation", ylabel="Net Present Cost (USD)", title="Net Present Costs vs Elevation"
+        Elevation, NPV; xlabel="Elevation", ylabel="Net Present Cost (USD)", title="Net Present Costs vs Elevation for all SOWs"
     )
 end
 ```
